@@ -1,0 +1,82 @@
+import numpy as np 
+import pandas as pd
+import matplotlib.pyplot as plt 
+import seaborn as sns
+import re  
+import string 
+import nltk
+from nltk.corpus import stopwords  
+from nltk.stem import LancasterStemmer 
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.feature_extraction.text import TfidfVectorizer 
+from sklearn.model_selection import train_test_split 
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.metrics import accuracy_score 
+import warnings 
+warnings.filterwarnings("ignore")
+df = pd.read_csv("/kaggle/input/sms-spam-collection-dataset/spam.csv", encoding="latin-1", usecols= ["v1", "v2"])
+df
+df.columns=["kind", "Message"]
+df
+df.describe()
+df.info()
+stop_words = set(stopwords.words('english'))
+stemmer = LancasterStemmer()
+def cleaning_data(text):
+    text = text.lower()
+    text = re.sub(r'@\S+', '', text)
+    text = re.sub(r'http\S+', '', text)
+    text = re.sub(r'.pic\S+', '', text)
+    text = re.sub(r'[^a-zA-Z+]', ' ', text)
+    text = "".join([i for i in text if i not in string.punctuation])
+    words = nltk.word_tokenize(text)
+    text = " ".join([i for i in words if i not in stop_words and len(i) > 2])
+    text = re.sub(r"\s+", " ", text).strip()
+    return text
+df["CleanMessage"] = df["Message"].apply(cleaning_data)
+df
+vectorizer = TfidfVectorizer()
+X = vectorizer.fit_transform(df["CleanMessage"])
+encoder = OneHotEncoder(sparse=False, drop='first')
+Y = encoder.fit_transform(df[["kind"]])
+X_combined = np.hstack((X.toarray(), Y))
+print(X_combined)
+plt.figure(figsize=(8, 6))
+sns.countplot(x="kind", data=df, palette="YlGnBu")
+plt.show()
+plt.figure(figsize=(8, 6))
+kind_counts = df["kind"].value_counts()
+plt.pie(kind_counts, labels=kind_counts.index, autopct="%0.0f%%")
+plt.show()
+X_train,X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, random_state=42)
+model = MultinomialNB()
+model.fit(X_train,Y_train)
+model.score(X_train,Y_train)
+y_pred = model.predict(X_test)
+y_pred
+accuracy = accuracy_score(Y_test, y_pred)
+print("Validation Accuracy:", accuracy)
+emails = [
+    'Hey Rohith, Festive season is here!!',
+    'Upto 40% discount on shopping and products, exclusive offer just for you. Dont miss this season!'
+]
+emails_count = vectorizer.transform(emails)
+model.predict(emails_count)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
