@@ -1,0 +1,42 @@
+import pandas as pd
+import numpy as np 
+import matplotlib.pyplot as plt 
+import seaborn as sns 
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier 
+from sklearn.metrics import accuracy_score ,confusion_matrix
+from sklearn.preprocessing import LabelEncoder
+df = pd.read_csv("/kaggle/input/bank-customer-churn-prediction/Churn_Modelling.csv")
+df
+LE = LabelEncoder()
+df["Gen"] = LE.fit_transform(df["Gender"])
+df["Geo"] = LE.fit_transform(df["Geography"])
+X = df[["RowNumber","CreditScore", "Geo", "Gen", "Age", "Tenure", "Balance", "NumOfProducts", "HasCrCard","IsActiveMember","EstimatedSalary"]]
+Y = df["Exited"]
+X_train, X_test, Y_train, Y_test = train_test_split(X,Y, test_size= 0.2, random_state=42)
+exit_counts = df["Exited"].value_counts()
+num_counts = df["NumOfProducts"].value_counts()
+plt.figure(figsize=(12, 6))
+plt.subplot(1, 2, 1)  
+plt.pie(exit_counts, labels=["No", "YES"], autopct="%0.0f%%")
+plt.title("Exited Counts")
+plt.subplot(1, 2, 2)  
+plt.bar(num_counts.index, num_counts.values, width=0.4)
+plt.xlabel("Number of Products")
+plt.ylabel("Count")
+plt.title("Number of Products Counts")
+plt.xticks(np.arange(0,5,1))
+plt.tight_layout()  
+plt.show()
+model = RandomForestClassifier()
+model.fit(X_train, Y_train)
+model.score(X_train, Y_train)
+y_pred = model.predict(X_test)
+y_pred
+accuracy = accuracy_score(Y_test, y_pred)
+print("Validation Accuracy:", accuracy)
+
+
+
+
+
