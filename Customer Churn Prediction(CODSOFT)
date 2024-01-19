@@ -6,7 +6,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier 
 from sklearn.metrics import accuracy_score ,confusion_matrix
 from sklearn.preprocessing import LabelEncoder
-df = pd.read_csv("/kaggle/input/bank-customer-churn-prediction/Churn_Modelling.csv")
+df = pd.read_csv("/content/Churn_Modelling.csv")
 df
 LE = LabelEncoder()
 df["Gen"] = LE.fit_transform(df["Gender"])
